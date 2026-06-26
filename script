@@ -1,0 +1,422 @@
+function hitungPrediksi(){
+
+    let tanggal =
+    document.getElementById("tanggalMulai").value;
+
+    if(tanggal==""){
+        alert("Pilih tanggal terlebih dahulu");
+        return;
+    }
+
+    let mulai = new Date(tanggal);
+
+    let haid = new Date(mulai);
+    haid.setDate(haid.getDate()+28);
+
+    let subur = new Date(mulai);
+    subur.setDate(subur.getDate()+14);
+
+    let ovulasi = new Date(mulai);
+    ovulasi.setDate(ovulasi.getDate()+14);
+
+    document.getElementById("prediksiHaid")
+    .innerHTML =
+    haid.toLocaleDateString("id-ID");
+
+    document.getElementById("masaSubur")
+    .innerHTML =
+    subur.toLocaleDateString("id-ID");
+
+    document.getElementById("ovulasi")
+    .innerHTML =
+    ovulasi.toLocaleDateString("id-ID");
+
+    localStorage.setItem(
+        "tanggalMulai",
+        tanggal
+    );
+
+    // SIMPAN KE RIWAYAT
+
+    let riwayat =
+    JSON.parse(
+        localStorage.getItem("riwayat")
+    ) || [];
+
+    riwayat.push(tanggal);
+
+    console.log(riwayat);
+
+    localStorage.setItem(
+        "riwayat",
+        JSON.stringify(riwayat)
+    );
+
+    let eventKalender = [];
+
+    eventKalender.push({
+
+        title: "🩸 Hari Pertama Haid",
+
+        start: tanggal,
+
+        color: "#ff4d88"
+
+    });
+
+    eventKalender.push({
+
+        title: "🌱 Masa Subur",
+
+        start: subur.toISOString().split("T")[0],
+
+        color: "#28a745"
+
+    });
+
+    eventKalender.push({
+
+        title: "🥚 Ovulasi",
+
+        start: ovulasi.toISOString().split("T")[0],
+
+        color: "#ffc107"
+
+    });
+
+    localStorage.setItem(
+        "eventKalender",
+        JSON.stringify(eventKalender)
+    );
+
+    tampilkanRiwayat();
+    tampilkanStatistik();
+    tampilkanRingkasan();
+
+    location.reload();
+}
+
+function simpanGejala(){
+
+    let mood =
+    document.getElementById("mood").value;
+
+    let nyeri =
+    document.getElementById("nyeri").value;
+
+    let catatan =
+    document.getElementById("catatan").value;
+
+    let data = {
+
+        mood: mood,
+        nyeri: nyeri,
+        catatan: catatan
+
+    };
+
+    localStorage.setItem(
+        "gejala",
+        JSON.stringify(data)
+    );
+
+    tampilkanGejala();
+
+    alert("Catatan berhasil disimpan");
+}
+
+function tampilkanGejala(){
+
+    let data =
+    JSON.parse(
+        localStorage.getItem("gejala")
+    );
+
+    if(!data) return;
+
+    document.getElementById("hasilGejala")
+    .innerHTML = `
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-body">
+
+            <h5>📋 Catatan Terakhir</h5>
+
+            <p><b>Mood:</b> ${data.mood}</p>
+
+            <p><b>Nyeri:</b> ${data.nyeri}</p>
+
+            <p><b>Catatan:</b> ${data.catatan}</p>
+
+        </div>
+
+    </div>
+
+    `;
+}
+
+tampilkanGejala();
+
+function tampilkanRiwayat(){
+
+    let riwayat =
+    JSON.parse(
+        localStorage.getItem("riwayat")
+    ) || [];
+
+    let html = "";
+
+    if(riwayat.length === 0){
+
+        html = `
+            <p class="text-muted">
+                Belum ada data.
+            </p>
+        `;
+
+    }else{
+
+        riwayat.forEach((item,index)=>{
+
+            html += `
+            <div class="card mt-2">
+
+                <div class="card-body">
+
+                    <b>Siklus ${index+1}</b>
+
+                    <br>
+
+                    ${item}
+
+                </div>
+
+            </div>
+            `;
+
+        });
+
+    }
+
+    document.getElementById("riwayatSiklus").innerHTML = html;
+}
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        let calendarEl =
+        document.getElementById("calendar");
+
+        if(calendarEl){
+
+        console.log(
+            JSON.parse(
+                localStorage.getItem("eventKalender")
+            )
+        );
+
+        let calendar =
+        new FullCalendar.Calendar(
+            calendarEl,
+            {
+                initialView: "dayGridMonth",
+                locale: "id",
+
+                events: JSON.parse(
+                    localStorage.getItem("eventKalender")
+                ) || []
+            }
+        );
+
+        calendar.render();
+
+    }
+
+});
+
+function muatPrediksiTerakhir(){
+
+        let tanggal =
+        localStorage.getItem("tanggalMulai");
+
+        if(!tanggal) return;
+
+        let mulai = new Date(tanggal);
+
+        let haid = new Date(mulai);
+        haid.setDate(haid.getDate()+28);
+
+        let subur = new Date(mulai);
+        subur.setDate(subur.getDate()+14);
+
+        let ovulasi = new Date(mulai);
+        ovulasi.setDate(ovulasi.getDate()+14);
+
+        document.getElementById("prediksiHaid")
+        .innerHTML =
+        haid.toLocaleDateString("id-ID");
+
+        document.getElementById("masaSubur")
+        .innerHTML =
+        subur.toLocaleDateString("id-ID");
+
+        document.getElementById("ovulasi")
+        .innerHTML =
+        ovulasi.toLocaleDateString("id-ID");
+
+        let hariIni = new Date();
+
+        hariIni.setHours(0,0,0,0);
+        haid.setHours(0,0,0,0);
+
+        let selisih =
+        Math.ceil(
+            (haid - hariIni) /
+            (1000 * 60 * 60 * 24)
+        );
+
+        let teksCountdown = "";
+
+        if(selisih > 1){
+
+            teksCountdown =
+            `⏳ Haid berikutnya diperkirakan ${selisih} hari lagi`;
+
+        }else if(selisih === 1){
+
+            teksCountdown =
+            "⏳ Haid berikutnya diperkirakan besok";
+
+        }else if(selisih === 0){
+
+            teksCountdown =
+            "⏳ Haid diperkirakan hari ini";
+
+        }else{
+
+            teksCountdown =
+            "⏳ Silakan masukkan data baru";
+
+}
+
+document.getElementById(
+    "countdownHaid"
+).innerHTML = teksCountdown;
+
+}
+
+
+
+function toggleDarkMode(){
+
+    document.body.classList.toggle(
+        "dark-mode"
+    );
+
+    if(
+        document.body.classList.contains(
+            "dark-mode"
+        )
+    ){
+
+        localStorage.setItem(
+            "darkMode",
+            "on"
+        );
+
+    }else{
+
+        localStorage.setItem(
+            "darkMode",
+            "off"
+        );
+
+    }
+
+}
+
+function tampilkanStatistik(){
+
+        let riwayat =
+        JSON.parse(
+            localStorage.getItem("riwayat")
+        ) || [];
+
+        document.getElementById(
+            "totalSiklus"
+        ).innerHTML = riwayat.length;
+
+}
+
+function tampilkanRingkasan(){
+
+    let riwayat =
+    JSON.parse(
+        localStorage.getItem("riwayat")
+    ) || [];
+
+    if(riwayat.length === 0){
+
+        document.getElementById(
+            "ringkasanSiklus"
+        ).innerHTML =
+        "Belum ada data";
+
+        return;
+
+    }
+
+    let terakhir =
+    riwayat[riwayat.length - 1];
+
+    document.getElementById(
+        "ringkasanSiklus"
+    ).innerHTML = `
+
+        <p>
+            <b>Siklus terakhir dimulai:</b>
+            <br>
+            ${terakhir}
+        </p>
+
+        <p>
+            <b>Total siklus tercatat:</b>
+            <br>
+            ${riwayat.length}
+        </p>
+
+    `;
+
+}
+
+function hapusSemuaData(){
+
+        let yakin = confirm(
+            "Yakin ingin menghapus semua data?"
+        );
+
+        if(!yakin) return;
+
+        localStorage.clear();
+
+        location.reload();
+
+}
+
+    tampilkanGejala();
+    tampilkanRiwayat();
+    muatPrediksiTerakhir();
+    tampilkanStatistik();
+    tampilkanRingkasan();
+
+    if(
+        localStorage.getItem(
+            "darkMode"
+        ) === "on"
+    ){
+
+        document.body.classList.add(
+            "dark-mode"
+     );
+
+    }
